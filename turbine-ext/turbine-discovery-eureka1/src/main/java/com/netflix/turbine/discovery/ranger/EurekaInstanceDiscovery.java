@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.turbine.discovery.eureka;
+package com.netflix.turbine.discovery.ranger;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -33,7 +33,7 @@ import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.discovery.shared.Application;
-import com.netflix.turbine.discovery.eureka.EurekaInstance.Status;
+import com.netflix.turbine.discovery.ranger.EurekaInstance.Status;
 
 /**
  * Class that encapsulates an {@link InstanceDicovery} implementation that uses Eureka (see https://github.com/Netflix/eureka)

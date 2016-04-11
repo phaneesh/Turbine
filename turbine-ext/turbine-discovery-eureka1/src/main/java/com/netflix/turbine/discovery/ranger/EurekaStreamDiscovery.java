@@ -13,54 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.turbine.discovery.eureka;
+package com.netflix.turbine.discovery.ranger;
 
 import java.net.URI;
 
-import com.netflix.eureka2.client.EurekaClient;
 import com.netflix.turbine.discovery.StreamAction;
 import com.netflix.turbine.discovery.StreamDiscovery;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 public class EurekaStreamDiscovery implements StreamDiscovery {
 
-    private static final Logger logger = LoggerFactory.getLogger(EurekaStreamDiscovery.class);
-
-    public static EurekaStreamDiscovery create(String appName, String uriTemplate, EurekaClient eurekaClient) {
-        return new EurekaStreamDiscovery(appName, uriTemplate, eurekaClient);
+    public static EurekaStreamDiscovery create(String appName, String uriTemplate) {
+        return new EurekaStreamDiscovery(appName, uriTemplate);
     }
 
     public final static String HOSTNAME = "{HOSTNAME}";
     private final String uriTemplate;
     private final String appName;
-    private final EurekaClient eurekaClient;
 
-    private EurekaStreamDiscovery(String appName, String uriTemplate, EurekaClient eurekaClient) {
+    private EurekaStreamDiscovery(String appName, String uriTemplate) {
         this.appName = appName;
         this.uriTemplate = uriTemplate;
-        this.eurekaClient = eurekaClient;
     }
 
     @Override
     public Observable<StreamAction> getInstanceList() {
-        return new EurekaInstanceDiscovery(eurekaClient)
+        return new EurekaInstanceDiscovery()
                 .getInstanceEvents(appName)
                 .map(ei -> {
                     URI uri;
-                    String uriString = uriTemplate.replace(HOSTNAME, ei.getHost() + ":" + ei.getPort());
                     try {
-                        uri = new URI(uriString);
+                        uri = new URI(uriTemplate.replace(HOSTNAME, ei.getHostName()));
                     } catch (Exception e) {
-                        throw new RuntimeException("Invalid URI: " + uriString, e);
+                        throw new RuntimeException("Invalid URI", e);
                     }
                     if (ei.getStatus() == EurekaInstance.Status.UP) {
-                        logger.info("StreamAction ADD");
                         return StreamAction.create(StreamAction.ActionType.ADD, uri);
                     } else {
-                        logger.info("StreamAction REMOVE");
                         return StreamAction.create(StreamAction.ActionType.REMOVE, uri);
                     }
 

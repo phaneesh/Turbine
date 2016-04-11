@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.turbine.discovery.eureka;
+package com.netflix.turbine.discovery.ranger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,9 +26,7 @@ import rx.observers.TestSubscriber;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.netflix.turbine.discovery.eureka.EurekaInstance;
-import com.netflix.turbine.discovery.eureka.EurekaInstanceDiscovery;
-import com.netflix.turbine.discovery.eureka.EurekaInstance.Status;
+import com.netflix.turbine.discovery.ranger.EurekaInstance.Status;
 
 public class EurekaInstanceDiscoveryTest {
 

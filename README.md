@@ -50,6 +50,18 @@ $ cd Turbine/
 $ ./gradlew build
 ```
 
+For Fat JAR:
+
+```
+$ git clone git@github.com:Netflix/Turbine.git
+$ cd Turbine/
+$ ./gradlew shadowJar
+```
+
+## Run
+```
+java -jar turbine-discovery-ranger-executable<version>.jar -port 8080 -zookeeper <zookeeper connection string> -namespace <ranger namespace> -environment <shard name> -streamPath <hystrix stream path> [-services <list of services that needs to added to stream>]
+```
  
 ## LICENSE
 

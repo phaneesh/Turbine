@@ -1,0 +1,25 @@
+zookeeper:
+  image: zookeeper
+  hostname: zookeeper
+  ports:
+    - "2181:2181"
+
+#turbine compose
+turbine:
+  container_name: turbine
+  build: .
+  ports:
+   - "8080:8080"
+  links:
+   - zookeeper
+
+# enviroment valiables
+  environment:
+   - GC_ALGO=UseG1GC
+   - JAVA_PROCESS_MIN_HEAP=512m
+   - JAVA_PROCESS_MAX_HEAP=512m
+   - STREAMPATH=hystrix.stream
+   - ENVIRONMENT=test
+   - NAMESPACE=test
+   - ZOOKEEPER=zookeeper:2181
+   - SERVICES=test

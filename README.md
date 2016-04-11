@@ -58,8 +58,9 @@ $ cd Turbine/
 $ ./gradlew shadowJar
 ```
 
-## Run
+## Run Turbine with [Ranger](https://github.com/flipkart-incubator/ranger) support
 ```
+cd turbine-ext/turbine-discovery-ranger/build/libs
 java -jar turbine-discovery-ranger-executable<version>.jar -port 8080 -zookeeper <zookeeper connection string> -namespace <ranger namespace> -environment <shard name> -streamPath <hystrix stream path> [-services <list of services that needs to added to stream>]
 ```
  

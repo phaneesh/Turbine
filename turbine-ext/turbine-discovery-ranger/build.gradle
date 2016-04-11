@@ -24,6 +24,15 @@ mainClassName = "com.netflix.turbine.discovery.ranger.StartRangerTurbine"
 shadowJar {
   baseName = 'turbine-discovery-ranger-executable'
   classifier = ''
+
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': mainClassName
+        )
+    }
 }
 
 publishing {

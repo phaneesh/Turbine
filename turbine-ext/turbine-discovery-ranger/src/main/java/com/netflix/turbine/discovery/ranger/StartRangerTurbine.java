@@ -50,7 +50,7 @@ public class StartRangerTurbine {
 
         String namespace = null;
         if (!options.has("namespace")) {
-            System.err.println("Argument -namespace required for Eureka instance discovery. Eg. -namespace mynamespace");
+            System.err.println("Argument -namespace required for Ranger instance discovery. Eg. -namespace mynamespace");
             System.exit(-1);
         } else {
             namespace = String.valueOf(options.valueOf("namespace"));
@@ -87,6 +87,7 @@ public class StartRangerTurbine {
 
         logger.info("Turbine => Ranger Namespace: " + namespace);
         logger.info("Turbine => Zookeeper Connection String: " + zookeeper);
+        logger.info("Turbine => Environment: " + environment);
         logger.info("Turbine => Services: " + (services == null ? "ALL" : services));
 
         try {

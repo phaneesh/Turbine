@@ -117,7 +117,9 @@ public class RangerStreamDiscovery implements StreamDiscovery {
                 .map(ei -> {
                     URI uri;
                     try {
-                        uri = new URI(String.format("http://%s:%d/%s", ei.getHostName(), ei.getHostPort(), streamPath ));
+                        final String endpoint = String.format("http://%s:%d/%s", ei.getHostName(), ei.getHostPort(), streamPath );
+                        logger.info("Instance endpoint: {}", endpoint);
+                        uri = new URI(endpoint);
                     } catch (Exception e) {
                         throw new RuntimeException("Invalid URI", e);
                     }

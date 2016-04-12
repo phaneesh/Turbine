@@ -43,7 +43,7 @@ public class RangerInstanceDiscovery {
                         serviceFinders.forEach( (service, serviceFinder) -> {
                             List<ServiceNode<ShardInfo>> instances = serviceFinder.getAll(shardInfo);
                             for (ServiceNode<ShardInfo> node : instances) {
-                                logger.info("Fetching instance list for service: {} | Instance: {}", service, node.getHost());
+                                logger.info("Fetching instance list for service: {} | Instance: {} | Port: {}", service, node.getHost(), node.getPort());
                                 switch (node.getHealthcheckStatus()) {
                                     case healthy:
                                         subscriber.onNext(RangerInstance.create(node, namespace, service));

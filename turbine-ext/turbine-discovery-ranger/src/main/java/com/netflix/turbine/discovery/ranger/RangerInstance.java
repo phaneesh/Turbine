@@ -15,7 +15,9 @@
  */
 package com.netflix.turbine.discovery.ranger;
 
+import com.flipkart.ranger.healthcheck.HealthcheckStatus;
 import com.flipkart.ranger.model.ServiceNode;
+import com.google.common.base.Joiner;
 
 public class RangerInstance {
 
@@ -27,12 +29,14 @@ public class RangerInstance {
     private final ServiceNode<ShardInfo> instance;
     private final String namespace;
     private final String service;
+    private final String cluster;
 
     private RangerInstance(Status status, ServiceNode<ShardInfo> instance, String namespace, String service) {
         this.status = status;
         this.instance = instance;
         this.namespace = namespace;
         this.service = service;
+        this.cluster = Joiner.on("-").join(instance.getNodeData().getEnvironment(), namespace, service);
     }
 
     public static RangerInstance create(ServiceNode<ShardInfo> instance, String namespace, String service) {
@@ -74,6 +78,14 @@ public class RangerInstance {
 
     public String getHostName() {
         return instance.getHost();
+    }
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public boolean isUp() {
+        return instance.getHealthcheckStatus() == HealthcheckStatus.healthy;
     }
 
     @Override

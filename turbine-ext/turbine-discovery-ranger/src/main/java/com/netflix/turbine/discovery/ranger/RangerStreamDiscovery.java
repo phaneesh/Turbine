@@ -24,7 +24,7 @@ import com.flipkart.ranger.healthcheck.HealthcheckStatus;
 import com.flipkart.ranger.model.ServiceNode;
 import com.netflix.turbine.discovery.StreamAction;
 import com.netflix.turbine.discovery.StreamDiscovery;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
@@ -34,7 +34,10 @@ import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RangerStreamDiscovery implements StreamDiscovery {
 

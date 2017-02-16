@@ -14,4 +14,4 @@ EXPOSE 8080
 
 ADD turbine-ext/turbine-discovery-ranger/build/libs/turbine-discovery-ranger-executable*.jar turbine-ranger.jar
 
-CMD sh -c "CMD DNS_HOST=`ip r | awk '/default/{print $3}'` && printf 'nameserver $DNS_HOST\n' > /etc/resolv.conf && java -jar -XX:+${GC_ALGO-UseG1GC} -Xms${JAVA_PROCESS_MIN_HEAP-1g} -Xmx${JAVA_PROCESS_MAX_HEAP-1g} turbine-ranger.jar -port 8080 -zookeeper ${ZOOKEEPER} -namespace ${NAMESPACE} -environment ${ENVIRONMENT} -streamPath ${STREAMPATH-hystrix.stream} -services ${SERVICES}"
+CMD sh -c "DNS_HOST=`ip r | awk '/default/{print $3}'` && printf 'nameserver $DNS_HOST\n' > /etc/resolv.conf && java -jar -XX:+${GC_ALGO-UseG1GC} -Xms${JAVA_PROCESS_MIN_HEAP-1g} -Xmx${JAVA_PROCESS_MAX_HEAP-1g} turbine-ranger.jar -port 8080 -zookeeper ${ZOOKEEPER} -namespace ${NAMESPACE} -environment ${ENVIRONMENT} -streamPath ${STREAMPATH-hystrix.stream} -services ${SERVICES}"

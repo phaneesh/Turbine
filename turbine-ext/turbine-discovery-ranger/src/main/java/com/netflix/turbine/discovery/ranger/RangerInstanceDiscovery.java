@@ -34,59 +34,18 @@ public class RangerInstanceDiscovery {
 
     }
 
-    public Observable<RangerInstance> getInstanceEvents(Map<String, SimpleShardedServiceFinder<ShardInfo>> serviceFinders,
+    public Observable<RangerInstance> getInstanceEvents(String service, SimpleShardedServiceFinder<ShardInfo> serviceFinder,
                                                         String environment, String namespace) {
         final ShardInfo shardInfo = new ShardInfo(environment);
-        return Observable.
-                create((Subscriber<? super RangerInstance> subscriber) -> {
-                    try {
-                        serviceFinders.forEach( (service, serviceFinder) -> {
-                            List<ServiceNode<ShardInfo>> instances = serviceFinder.getAll(shardInfo);
-                            for (ServiceNode<ShardInfo> node : instances) {
-                                logger.info("Fetching instance list for service: {} | Instance: {} | Port: {}", service, node.getHost(), node.getPort());
-                                switch (node.getHealthcheckStatus()) {
-                                    case healthy:
-                                        subscriber.onNext(RangerInstance.create(node, namespace, service));
-                                }
-                            }
-                            subscriber.onCompleted();
-                        });
-                    } catch (Throwable e) {
-                        subscriber.onError(e);
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .toList()
-                .repeatWhen(a -> a.flatMap(n -> Observable.timer(30, TimeUnit.SECONDS))) // repeat after 30 second delay
-                .startWith(new ArrayList<RangerInstance>())
-                .buffer(2, 1)
-                .filter(l -> l.size() == 2)
-                .flatMap(RangerInstanceDiscovery::delta);
-    }
-
-    static Observable<RangerInstance> delta(List<List<RangerInstance>> listOfLists) {
-        if (listOfLists.size() == 1) {
-            return Observable.from(listOfLists.get(0));
-        } else {
-            // diff the two
-            List<RangerInstance> newList = listOfLists.get(1);
-            List<RangerInstance> oldList = new ArrayList<>(listOfLists.get(0));
-
-            Set<RangerInstance> delta = new LinkedHashSet<>();
-            delta.addAll(newList);
-            // remove all that match in old
-            delta.removeAll(oldList);
-
-            // filter oldList to those that aren't in the newList
-            oldList.removeAll(newList);
-
-            // for all left in the oldList we'll create DROP events
-            for (RangerInstance old : oldList) {
-                delta.add(RangerInstance.create(RangerInstance.Status.DOWN, old.getInstanceInfo(), old.getNamespace(), old.getService()));
+        List<RangerInstance> nodes = new ArrayList<>();
+        List<ServiceNode<ShardInfo>> instances = serviceFinder.getAll(shardInfo);
+        for (ServiceNode<ShardInfo> node : instances) {
+            logger.info("Fetching instance list for service: {} | Instance: {} | Port: {}", service, node.getHost(), node.getPort());
+            switch (node.getHealthcheckStatus()) {
+                case healthy:
+                    nodes.add(RangerInstance.create(node, namespace, service));
             }
-
-            return Observable.from(delta);
         }
+        return Observable.from(nodes);
     }
-
 }

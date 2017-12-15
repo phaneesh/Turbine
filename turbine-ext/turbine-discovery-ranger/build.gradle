@@ -16,7 +16,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
-    compile ('com.flipkart.ranger:ranger:0.2.1') {
+    compile ('com.flipkart.ranger:ranger:0.3.0') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     compile 'com.google.guava:guava:19.0'

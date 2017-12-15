@@ -1,12 +1,12 @@
 /**
  * Copyright 2014 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,10 +34,6 @@ import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RangerStreamDiscovery implements StreamDiscovery {
 
@@ -49,78 +45,66 @@ public class RangerStreamDiscovery implements StreamDiscovery {
 
     private final String zookeeper;
     private final String namespace;
-    private final String services;
+    private final String service;
     private final String environment;
     private final String streamPath;
-
-    private List<String> filteredServices;
 
     private final CuratorFramework curatorFramework;
 
     private final ObjectMapper objectMapper;
-    
-    private Map<String, SimpleShardedServiceFinder<ShardInfo>> serviceFinders = new HashMap<>();
 
-    private RangerStreamDiscovery(String zookeeper, String namespace, String services, String environment, String streamPath) {
+    private SimpleShardedServiceFinder<ShardInfo> serviceFinder = null;
+
+    private RangerStreamDiscovery(String zookeeper, String namespace, String service, String environment, String streamPath) {
         this.zookeeper = zookeeper;
         this.namespace = namespace;
-        this.services = services;
+        this.service = service;
         this.environment = environment;
         this.streamPath = streamPath;
         this.objectMapper = new ObjectMapper();
         this.curatorFramework = CuratorFrameworkFactory.builder().connectString(this.zookeeper)
                 .namespace(this.namespace).retryPolicy(new RetryNTimes(10000, 1000)).build();
         curatorFramework.start();
-        if(StringUtils.isEmpty(services))
-            try {
-                filteredServices = curatorFramework.getChildren().forPath("/");
-            } catch (Exception e) {
-                logger.error("Error getting service list", e);
-            }
-        else
-            filteredServices = Arrays.asList(this.services.split(","));
-        init();
+        if (!StringUtils.isEmpty(service))
+            init();
     }
 
     private void init() {
-        filteredServices.forEach( service -> {
-            try {
-                final SimpleShardedServiceFinder<ShardInfo> serviceFinder = ServiceFinderBuilders
-                        .<ShardInfo>shardedFinderBuilder().withCuratorFramework(curatorFramework)
-                        .withNamespace(namespace)
-                        .withServiceName(service)
-                        .withDeserializer(data -> {
-                            try {
-                                JsonNode nodeInfoRoot = objectMapper.readTree(data);
-                                if (nodeInfoRoot.has("node_data")) {
-                                    ServiceNode serviceNode = new ServiceNode(nodeInfoRoot.get("host").asText(), nodeInfoRoot.get("port").asInt(), objectMapper.treeToValue(nodeInfoRoot.get("node_data"), ShardInfo.class));
-                                    serviceNode.setHealthcheckStatus(HealthcheckStatus.valueOf(nodeInfoRoot.get("healthcheck_status").asText()));
-                                    serviceNode.setLastUpdatedTimeStamp(nodeInfoRoot.get("last_updated_time_stamp").asLong());
-                                    return serviceNode;
-                                }
-                                return objectMapper.readValue(data, new TypeReference<ServiceNode<ShardInfo>>(){});
+        try {
+            serviceFinder = ServiceFinderBuilders
+                    .<ShardInfo>shardedFinderBuilder().withCuratorFramework(curatorFramework)
+                    .withNamespace(namespace)
+                    .withServiceName(service)
+                    .withDeserializer(data -> {
+                        try {
+                            JsonNode nodeInfoRoot = objectMapper.readTree(data);
+                            if (nodeInfoRoot.has("node_data")) {
+                                ServiceNode serviceNode = new ServiceNode(nodeInfoRoot.get("host").asText(), nodeInfoRoot.get("port").asInt(), objectMapper.treeToValue(nodeInfoRoot.get("node_data"), ShardInfo.class));
+                                serviceNode.setHealthcheckStatus(HealthcheckStatus.valueOf(nodeInfoRoot.get("healthcheck_status").asText()));
+                                serviceNode.setLastUpdatedTimeStamp(nodeInfoRoot.get("last_updated_time_stamp").asLong());
+                                return serviceNode;
                             }
-                            catch (IOException e) {
-                                throw new RuntimeException("Error deserializing results", e);
-                            }
-                        })
-                        .build();
-                serviceFinder.start();
-                serviceFinders.put(service, serviceFinder);
-            } catch (Exception e) {
-                logger.error("Error initializing ranger service finders", e);
-            }
-        });
+                            return objectMapper.readValue(data, new TypeReference<ServiceNode<ShardInfo>>() {
+                            });
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error deserializing results", e);
+                        }
+                    })
+                    .build();
+            serviceFinder.start();
+        } catch (Exception e) {
+            logger.error("Error initializing ranger service finders", e);
+        }
     }
 
     @Override
     public Observable<StreamAction> getInstanceList() {
         return new RangerInstanceDiscovery()
-                .getInstanceEvents(serviceFinders, environment, namespace)
+                .getInstanceEvents(service, serviceFinder, environment, namespace)
                 .map(ei -> {
                     URI uri;
                     try {
-                        final String endpoint = String.format("http://%s:%d/%s", ei.getHostName(), ei.getHostPort(), streamPath );
+                        final String endpoint = String.format("http://%s:%d/%s", ei.getHostName(), ei.getHostPort(), streamPath);
                         logger.info("Instance endpoint: {}", endpoint);
                         uri = new URI(endpoint);
                     } catch (Exception e) {
